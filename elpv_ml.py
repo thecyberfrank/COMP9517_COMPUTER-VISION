@@ -353,16 +353,14 @@ label_mapping = {
 plot_confusion_matrix(svm_cm_poly, classes=list(label_mapping.values()), title='Poly SVM Confusion Matrix')
 svm_report_poly = classification_report(y_test_poly, svm_predictions_poly, target_names=list(label_mapping.values()), zero_division=0)
 print("Poly SVM Classification Report:\n", svm_report_poly)
-
-plot_confusion_matrix(rf_cm_poly, classes=list(label_mapping.values()), title='Poly Random Forest Confusion Matrix')
-rf_report_poly = classification_report(y_test_poly, rf_predictions_poly, target_names=list(label_mapping.values()), zero_division=0)
-print("Poly Random Forest Classification Report:\n", rf_report_poly)
-
-
 plot_confusion_matrix(svm_cm_mono, classes=list(label_mapping.values()), title='Mono SVM Confusion Matrix')
 svm_report_mono = classification_report(y_test_mono, svm_predictions_mono, target_names=list(label_mapping.values()), zero_division=0)
 print("Mono SVM Classification Report:\n", svm_report_mono)
 
+
+plot_confusion_matrix(rf_cm_poly, classes=list(label_mapping.values()), title='Poly Random Forest Confusion Matrix')
+rf_report_poly = classification_report(y_test_poly, rf_predictions_poly, target_names=list(label_mapping.values()), zero_division=0)
+print("Poly Random Forest Classification Report:\n", rf_report_poly)
 plot_confusion_matrix(rf_cm_mono, classes=list(label_mapping.values()), title='Mono Random Forest Confusion Matrix')
 rf_report_mono = classification_report(y_test_mono, rf_predictions_mono, target_names=list(label_mapping.values()), zero_division=0)
 print("Mono Random Forest Classification Report:\n", rf_report_mono)
@@ -371,11 +369,61 @@ print("Mono Random Forest Classification Report:\n", rf_report_mono)
 # 计算poly数据的总体精度
 svm_accuracy_poly = accuracy_score(y_test_poly, svm_predictions_poly)
 rf_accuracy_poly = accuracy_score(y_test_poly, rf_predictions_poly)
-print(f"Poly SVM Accuracy: {svm_accuracy_poly}")
-print(f"Poly Random Forest Accuracy: {rf_accuracy_poly}")
-
 # 计算mono数据的总体精度
 svm_accuracy_mono = accuracy_score(y_test_mono, svm_predictions_mono)
 rf_accuracy_mono = accuracy_score(y_test_mono, rf_predictions_mono)
+
+print(f"Poly SVM Accuracy: {svm_accuracy_poly}")
 print(f"Mono SVM Accuracy: {svm_accuracy_mono}")
+print(f"Poly Random Forest Accuracy: {rf_accuracy_poly}")
 print(f"Mono Random Forest Accuracy: {rf_accuracy_mono}")
+
+"""## 尝试使用随机森林+SVM的混合模型"""
+
+# SVM使用随机森林进行特征选择或特征转换，然后将这些特征输入到SVM模型中进行最终的分类，
+# 这种方法可以结合两者的优势：随机森林的特征选择能力和SVM的分类效果。
+
+# 训练随机森林模型
+rf_poly = RandomForestClassifier(n_estimators=100, n_jobs=-1)
+rf_poly.fit(X_train_poly_pca, y_train_poly)
+
+rf_mono = RandomForestClassifier(n_estimators=100, n_jobs=-1)
+rf_mono.fit(X_train_mono_pca, y_train_mono)
+
+# 使用随机森林模型生成新的特征集
+X_train_poly_rf = rf_poly.predict_proba(X_train_poly_pca)
+X_test_poly_rf = rf_poly.predict_proba(X_test_poly_pca)
+
+X_train_mono_rf = rf_mono.predict_proba(X_train_mono_pca)
+X_test_mono_rf = rf_mono.predict_proba(X_test_mono_pca)
+
+# 训练SVM模型
+svm_poly = SVC(kernel='rbf', gamma='scale', probability=True)
+svm_poly.fit(X_train_poly_rf, y_train_poly)
+
+svm_mono = SVC(kernel='rbf', gamma='scale', probability=True)
+svm_mono.fit(X_train_mono_rf, y_train_mono)
+
+# 进行预测
+svm_predictions_poly = svm_poly.predict(X_test_poly_rf)
+svm_predictions_mono = svm_mono.predict(X_test_mono_rf)
+
+# 计算混淆矩阵
+svm_cm_poly = confusion_matrix(y_test_poly, svm_predictions_poly)
+svm_cm_mono = confusion_matrix(y_test_mono, svm_predictions_mono)
+
+# 绘制混淆矩阵，打印分类报告
+plot_confusion_matrix(svm_cm_poly, classes=list(label_mapping.values()), title='Poly SVM Confusion Matrix')
+svm_report_poly = classification_report(y_test_poly, svm_predictions_poly, target_names=list(label_mapping.values()), zero_division=0)
+print("Poly SVM Classification Report:\n", svm_report_poly)
+
+plot_confusion_matrix(svm_cm_mono, classes=list(label_mapping.values()), title='Mono SVM Confusion Matrix')
+svm_report_mono = classification_report(y_test_mono, svm_predictions_mono, target_names=list(label_mapping.values()), zero_division=0)
+print("Mono SVM Classification Report:\n", svm_report_mono)
+
+# 计算总体精度
+svm_accuracy_poly = accuracy_score(y_test_poly, svm_predictions_poly)
+svm_accuracy_mono = accuracy_score(y_test_mono, svm_predictions_mono)
+print(f"Poly SVM Accuracy: {svm_accuracy_poly}")
+print(f"Mono SVM Accuracy: {svm_accuracy_mono}")
+
