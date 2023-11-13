@@ -306,6 +306,7 @@ rf_predictions_mono = rf_mono.predict(X_test_mono_pca)
 """## 7. 展示预测结果"""
 
 from IPython.display import Javascript
+from sklearn.metrics import f1_score
 
 # 移除Colab输出区域的高度限制
 def remove_output_scrolling():
@@ -373,10 +374,18 @@ rf_accuracy_poly = accuracy_score(y_test_poly, rf_predictions_poly)
 svm_accuracy_mono = accuracy_score(y_test_mono, svm_predictions_mono)
 rf_accuracy_mono = accuracy_score(y_test_mono, rf_predictions_mono)
 
-print(f"Poly SVM Accuracy: {svm_accuracy_poly}")
-print(f"Mono SVM Accuracy: {svm_accuracy_mono}")
-print(f"Poly Random Forest Accuracy: {rf_accuracy_poly}")
-print(f"Mono Random Forest Accuracy: {rf_accuracy_mono}")
+
+# 计算F1分数
+f1_score_poly_svm = f1_score(y_test_poly, svm_predictions_poly, average='weighted')
+f1_score_mono_svm = f1_score(y_test_mono, svm_predictions_mono, average='weighted')
+f1_score_poly_rf = f1_score(y_test_poly, rf_predictions_poly, average='weighted')
+f1_score_mono_rf = f1_score(y_test_mono, rf_predictions_mono, average='weighted')
+
+# 打印精度和F1分数
+print(f"Poly SVM Accuracy: {svm_accuracy_poly}, F1 Score: {f1_score_poly_svm}")
+print(f"Mono SVM Accuracy: {svm_accuracy_mono}, F1 Score: {f1_score_mono_svm}")
+print(f"Poly Random Forest Accuracy: {rf_accuracy_poly}, F1 Score: {f1_score_poly_rf}")
+print(f"Mono Random Forest Accuracy: {rf_accuracy_mono}, F1 Score: {f1_score_mono_rf}")
 
 """## 尝试使用随机森林+SVM的混合模型"""
 
@@ -421,9 +430,13 @@ plot_confusion_matrix(svm_cm_mono, classes=list(label_mapping.values()), title='
 svm_report_mono = classification_report(y_test_mono, svm_predictions_mono, target_names=list(label_mapping.values()), zero_division=0)
 print("Mono SVM Classification Report:\n", svm_report_mono)
 
+
 # 计算总体精度
 svm_accuracy_poly = accuracy_score(y_test_poly, svm_predictions_poly)
 svm_accuracy_mono = accuracy_score(y_test_mono, svm_predictions_mono)
-print(f"Poly SVM Accuracy: {svm_accuracy_poly}")
-print(f"Mono SVM Accuracy: {svm_accuracy_mono}")
+
+f1_score_poly_svm = f1_score(y_test_poly, svm_predictions_poly, average='weighted')
+f1_score_mono_svm = f1_score(y_test_mono, svm_predictions_mono, average='weighted')
+print(f"Poly SVM Accuracy: {svm_accuracy_poly}, F1 Score: {f1_score_poly_svm}")
+print(f"Mono SVM Accuracy: {svm_accuracy_mono}, F1 Score: {f1_score_mono_svm}")
 
